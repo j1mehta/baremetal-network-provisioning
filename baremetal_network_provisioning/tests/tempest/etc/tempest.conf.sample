@@ -1,20 +1,8 @@
 [network]
 #List of switch device,interfaces name and segmentation_ids for switch discovery
-ip_address_invalid = "105.0.1.266"
-ip_address_unreachable = ""
 sw_usr = switch_username
 sw_passwd = switch_password
-vendor = "hp"
-access_parameter = {"write_community": "public"}
-access_parameter_priv = {"write_community": "private"}
+vendor = vendor_name
+access_parameter = write_community
 access_protocol_v1 = snmpv1
 access_protocol_v2c = snmpv2c
-access_protocol_v3 = snmpv3
-access_parameter_v3 = {"write_community": "public", "security_name": "bmnpusr33", "auth_protocol": "md5", "auth_key": "abcdabcdd", "priv_protocol": "des56", "priv_key": "abcdabcdd"}
-
-switch_ip = 
-l2gw_switch_ip = switch_vtep_ip
-hosts = cn_host_name:cn_ip, nn_host_name:nn_ip
-ovsdb_ip = ovsdb_ip
-ovsdb_port = 6632
-ovsdb_schema_name = hardware_vtep
