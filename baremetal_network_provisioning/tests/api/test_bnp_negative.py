@@ -19,35 +19,42 @@ from oslo_config import cfg
 
 from baremetal_network_provisioning.tests.tempest import config
 
-from tempest_lib import exceptions as lib_exc
+from tempest.lib import exceptions as lib_exc
 
 config.register_options()
 CONF = cfg.CONF
-ip_address = CONF.hpeBNP.ip_address
-sw_usr = CONF.hpeBNP.switch_user
-sw_passwd = CONF.hpeBNP.switch_passwd
-vendor = CONF.hpeBNP.vendor
-access_parameter = CONF.hpeBNP.access_parameter
-access_parameter_priv = CONF.hpeBNP.access_parameter_priv
-access_protocol_v1 = CONF.hpeBNP.access_protocol_v1
-access_protocol_v2c = CONF.hpeBNP.access_protocol_v2c
-access_protocol_v3 = CONF.hpeBNP.access_protocol_v3
-access_parameter_v3 = CONF.hpeBNP.access_parameter_v3
+sw_ip_address = CONF.hpe_bnp.sw_ip_address
+sw_ip_address_inv = CONF.hpe_bnp.sw_ip_address_inv
+vendor = CONF.hpe_bnp.vendor
+access_parameter = CONF.hpe_bnp.access_parameter
+access_parameter_inv = CONF.hpe_bnp.access_parameter_inv
+access_parameter_priv = CONF.hpe_bnp.access_parameter_priv
+access_protocol_v1 = CONF.hpe_bnp.access_protocol_v1
+access_protocol_v2c = CONF.hpe_bnp.access_protocol_v2c
+access_protocol_v3 = CONF.hpe_bnp.access_protocol_v3
+access_parameter_v3 = CONF.hpe_bnp.access_parameter_v3
 
 
 class BMNPExtensionTestJSON(base.BaseAdminNetworkTest):
     _interface = 'json'
 
     """
-    Tests the negatvie scenarios in the BNP API using the REST client for
+    Tests the negative scenarios in the BNP API using the REST client for
     BNP
     """
+
+    def test_invalid_community(self):
+        self.assertRaises(lib_exc.BadRequest,
+                          self.admin_client.create_bnp_switche,
+                          ip_address=sw_ip_address, vendor=vendor,
+                          access_parameters=access_parameter_inv,
+                          access_protocol=access_protocol_v1)
 
     def test_invalid_snmp_v1_protocol(self):
         acc_proto = access_protocol_v1 + 'xyz'
         self.assertRaises(lib_exc.BadRequest,
                           self.admin_client.create_bnp_switche,
-                          ip_address=ip_address, vendor=vendor,
+                          ip_address=sw_ip_address, vendor=vendor,
                           access_parameters=access_parameter,
                           access_protocol=acc_proto)
 
@@ -55,7 +62,7 @@ class BMNPExtensionTestJSON(base.BaseAdminNetworkTest):
         acc_proto = access_protocol_v2c + 'xyz'
         self.assertRaises(lib_exc.BadRequest,
                           self.admin_client.create_bnp_switche,
-                          ip_address=ip_address, vendor=vendor,
+                          ip_address=sw_ip_address, vendor=vendor,
                           access_parameters=access_parameter,
                           access_protocol=acc_proto)
 
@@ -63,14 +70,14 @@ class BMNPExtensionTestJSON(base.BaseAdminNetworkTest):
         acc_proto = access_protocol_v3 + 'xyz'
         self.assertRaises(lib_exc.BadRequest,
                           self.admin_client.create_bnp_switche,
-                          ip_address=ip_address, vendor=vendor,
+                          ip_address=sw_ip_address, vendor=vendor,
                           access_parameters=access_parameter,
                           access_protocol=acc_proto)
 
     def test_invalid_IP_switch(self):
         self.assertRaises(lib_exc.BadRequest,
                           self.admin_client.create_bnp_switche,
-                          ip_address='105.0.1.266',
+                          ip_address=sw_ip_address_inv,
                           vendor=vendor, access_parameters=access_parameter,
                           access_protocol=access_protocol_v1)
 
@@ -78,5 +85,12 @@ class BMNPExtensionTestJSON(base.BaseAdminNetworkTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.admin_client.create_bnp_switche,
                           ip_address='104.0.1.117', vendor=vendor,
+                          access_parameters=access_parameter,
+                          access_protocol=access_protocol_v1)
+
+    def test_invalid_vendor(self):
+        self.assertRaises(lib_exc.BadRequest,
+                          self.admin_client.create_bnp_switche,
+                          ip_address=sw_ip_address, vendor='invalid_vendor',
                           access_parameters=access_parameter,
                           access_protocol=access_protocol_v1)

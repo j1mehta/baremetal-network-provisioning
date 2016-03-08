@@ -1,8 +1,7 @@
 [network]
 #List of switch device,interfaces name and segmentation_ids for switch discovery
-sw_usr = switch_username
-sw_passwd = switch_password
 vendor = vendor_name
 access_parameter = write_community
 access_protocol_v1 = snmpv1
 access_protocol_v2c = snmpv2c
+access_protocol_v3 = snmpv3

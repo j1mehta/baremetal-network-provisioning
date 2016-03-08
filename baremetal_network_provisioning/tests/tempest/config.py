@@ -18,15 +18,18 @@ from oslo_config import cfg
 
 # BMNP related config information
 
-hpeBNP_OPTS = [
+hpe_bnp_opts = [
 
-    cfg.StrOpt('ip_address',
+    cfg.StrOpt('sw_ip_address_inv',
+               default='',
+               help='Invalid switch IP address'),
+    cfg.StrOpt('sw_ip_address',
                default='',
                help='Switch IP address'),
-    cfg.StrOpt('switch_user',
+    cfg.StrOpt('sw_usr',
                default='',
                help='Switch user name to log in'),
-    cfg.StrOpt('switch_passwd',
+    cfg.StrOpt('sw_passwd',
                default='',
                help='Switch password to log in'),
     cfg.StrOpt('vendor',
@@ -35,6 +38,9 @@ hpeBNP_OPTS = [
     cfg.DictOpt('access_parameter',
                 default='',
                 help='access_parameter for snmp v1 and v2'),
+    cfg.DictOpt('access_parameter_inv',
+                default='',
+                help='access_parameter with invalid community'),
     cfg.DictOpt('access_parameter_priv',
                 default='',
                 help='access_parameter_priv'),
@@ -55,4 +61,4 @@ hpeBNP_OPTS = [
 
 
 def register_options():
-    cfg.CONF.register_opts(hpeBNP_OPTS, "hpeBNP")
+    cfg.CONF.register_opts(hpe_bnp_opts, "hpe_bnp")
