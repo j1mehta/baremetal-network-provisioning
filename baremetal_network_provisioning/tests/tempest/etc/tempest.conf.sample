@@ -1,7 +1,6 @@
 [network]
 #List of switch device,interfaces name and segmentation_ids for switch discovery
 vendor = vendor_name
-access_parameter = write_community
-access_protocol_v1 = snmpv1
-access_protocol_v2c = snmpv2c
-access_protocol_v3 = snmpv3
+access_parameter = write_community: public, security_name: bmnpusr33, auth_protocol: md5
+access_protocol = snmpv1
+sw_ip_address = 105.0.1.107
