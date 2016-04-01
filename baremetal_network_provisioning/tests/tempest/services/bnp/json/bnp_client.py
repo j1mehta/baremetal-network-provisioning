@@ -82,6 +82,13 @@ class BnpClientJSON(service_client.RestClient):
         body = json.loads(body)
         return body
 
+    def b_list_switches(self):
+        uri = '%s/bnp-switches' % (self.uri_prefix)
+        resp, body = self.get(uri)
+        self.expected_success(200, resp.status)
+        body = json.loads(body)
+        return body
+
     def b_update_switch(self, switch_id):
         uri = '%s/bnp-switches/%s' % (self.uri_prefix, switch_id)
         body = {"bnp_switch": {"enable": "False"}}

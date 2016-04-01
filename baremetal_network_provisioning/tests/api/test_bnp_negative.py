@@ -19,6 +19,7 @@ from oslo_config import cfg
 
 from baremetal_network_provisioning.tests.tempest import config
 
+import telnet_utils
 from tempest.lib import exceptions as lib_exc
 
 from baremetal_network_provisioning.tests.tempest.services.bnp.json import(
@@ -28,6 +29,8 @@ config.register_options()
 CONF = cfg.CONF
 sw_ip_address = CONF.hpe_bnp.sw_ip_address
 sw_ip_address_inv = CONF.hpe_bnp.sw_ip_address_inv
+sw_user = CONF.hpe_bnp.switch_user
+sw_passwd = CONF.hpe_bnp.switch_passwd
 vendor = CONF.hpe_bnp.vendor
 access_parameter = CONF.hpe_bnp.access_parameter
 access_parameter_inv = CONF.hpe_bnp.access_parameter_inv
@@ -36,6 +39,8 @@ access_protocol_v1 = CONF.hpe_bnp.access_protocol_v1
 access_protocol_v2c = CONF.hpe_bnp.access_protocol_v2c
 access_protocol_v3 = CONF.hpe_bnp.access_protocol_v3
 access_parameter_v3 = CONF.hpe_bnp.access_parameter_v3
+telnet_port = 23
+timeout = 50
 
 
 class BMNPExtensionTestJSON(base.BaseAdminNetworkTest,
@@ -46,6 +51,19 @@ class BMNPExtensionTestJSON(base.BaseAdminNetworkTest,
     Tests the negative scenarios in the BNP API using the REST client for
     BNP
     """
+
+    def test_discover_disabled_switch(self):
+        tn = telnet_utils.connect_to_switch(sw_ip_address, telnet_port,
+                                            sw_user, sw_passwd, timeout)
+        telnet_utils.run_cmd_op(tn, 'sys')
+        telnet_utils.run_cmd_op(tn, 'undo snmp-agent')
+        self.assertRaises(lib_exc.BadRequest,
+                          self.admin_client.b_create_switch,
+                          ip_address=sw_ip_address, vendor=vendor,
+                          access_protocol=access_protocol_v2c,
+                          **access_parameter)
+        telnet_utils.run_cmd_op(tn, 'snmp-agent')
+
     def test_create_duplicate_switch(self):
         switch = self.admin_client.b_create_switch(ip_address=sw_ip_address,
                                                    vendor=vendor,
@@ -61,6 +79,48 @@ class BMNPExtensionTestJSON(base.BaseAdminNetworkTest,
         self.admin_client.b_update_switch(switch_id)
         self.admin_client.b_delete_switch(switch_id)
 
+    def test_create_switch_non_admin(self):
+        self.assertRaises(lib_exc.Forbidden,
+                          self.client.b_create_switch,
+                          ip_address=sw_ip_address, vendor=vendor,
+                          access_protocol=access_protocol_v2c,
+                          **access_parameter)
+
+    def test_update_switch_non_admin(self):
+        switch = self.admin_client.b_create_switch(ip_address=sw_ip_address,
+                                                   vendor=vendor,
+                                                   access_protocol=(
+                                                       access_protocol_v2c),
+                                                   **access_parameter)
+        switch_id = switch['bnp_switch']['id']
+        self.assertRaises(lib_exc.Forbidden,
+                          self.client.b_update_switch, switch_id)
+        self.admin_client.b_update_switch(switch_id)
+        self.admin_client.b_delete_switch(switch_id)
+
+    def test_delete_switch_non_admin(self):
+        switch = self.admin_client.b_create_switch(ip_address=sw_ip_address,
+                                                   vendor=vendor,
+                                                   access_protocol=(
+                                                       access_protocol_v2c),
+                                                   **access_parameter)
+        switch_id = switch['bnp_switch']['id']
+        self.assertRaises(lib_exc.Forbidden,
+                          self.client.b_delete_switch, switch_id)
+        self.admin_client.b_update_switch(switch_id)
+        self.admin_client.b_delete_switch(switch_id)
+
+    def test_delete_switch_without_update(self):
+        switch = self.admin_client.b_create_switch(ip_address=sw_ip_address,
+                                                   vendor=vendor,
+                                                   access_protocol=(
+                                                       access_protocol_v2c),
+                                                   **access_parameter)
+        switch_id = switch['bnp_switch']['id']
+        self.assertRaises(lib_exc.BadRequest,
+                          self.admin_client.b_delete_switch, switch_id)
+        self.admin_client.b_update_switch(switch_id)
+        self.admin_client.b_delete_switch(switch_id)
 
     def test_invalid_community(self):
         self.assertRaises(lib_exc.BadRequest,
